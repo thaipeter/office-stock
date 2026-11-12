@@ -175,8 +175,12 @@ button:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
 <div id="sheetBg"></div><div id="sheet" role="dialog" aria-modal="true"></div><div id="toast" role="status"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.js"></script>
 <script>
+// Public values only (publishable key; Row Level Security protects the data)
+window.STOCK_CONFIG = {
+  url: "https://uwiuzlfnhdtroozcilhi.supabase.co",
+  key: "sb_publishable_4n2qVWgpdypWRx902UMung_2WVq5vxD",
+};
 const sb = supabase.createClient(STOCK_CONFIG.url, STOCK_CONFIG.key);
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

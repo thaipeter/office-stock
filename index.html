@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#b04e69">
+<title>สต็อกของใช้สำนักงาน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fcf8f8; --card:#ffffff; --ink:#3a2f35; --mut:#85787e; --line:#f0e4e7;
+  --rose:#b04e69; --rose-d:#963f58; --rose-t:#f8e7ec;
+  --sage:#4d8a6f; --sage-t:#e6f1ec; --amber:#a86a0a; --amber-t:#fbf0dc; --red:#b3392f;
+  --r:16px; --shadow:0 1px 2px rgba(80,40,55,.06);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#1c1619; --card:#262024; --ink:#f3e9ed; --mut:#aa9ca3; --line:#38303a;
+  --rose:#e08aa1; --rose-d:#eba3b6; --rose-t:#3a2630; --sage:#7cc0a1; --sage-t:#1f3029; --amber:#e3b25a; --amber-t:#38301d; --red:#ff8d84;}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 Sarabun,system-ui,sans-serif;padding-bottom:84px}
+h1,h2,h3,.num,button,nav{font-family:Prompt,Sarabun,sans-serif}
+h1{font-size:24px;font-weight:500;margin:0 0 4px}
+h2{font-size:18px;font-weight:500;margin:28px 0 10px}
+p{margin:0}
+.wrap{max-width:720px;margin:0 auto;padding:0 18px}
+.sub{color:var(--mut);font-size:15px}
+.hide{display:none!important}
+
+/* top bar + nav */
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;max-width:720px;margin:0 auto}
+.brand{font:500 18px Prompt;color:var(--rose)}
+.who{font-size:14px;color:var(--mut);text-align:right;line-height:1.3}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:20}
+nav button{flex:1;max-width:120px;display:grid;justify-items:center;gap:2px;border:0;background:none;color:var(--mut);font-size:12.5px;padding:6px 2px;border-radius:12px;cursor:pointer}
+nav button svg{width:24px;height:24px}
+nav button.on{color:var(--rose);background:var(--rose-t)}
+@media(min-width:820px){
+  body{padding-bottom:40px}
+  nav{position:static;border:0;background:none;max-width:720px;margin:0 auto 6px;padding:0 18px;justify-content:flex-start;gap:6px}
+  nav button{flex:none;display:flex;gap:8px;align-items:center;font-size:15px;padding:9px 16px;max-width:none}
+  nav button svg{width:20px;height:20px}
+}
+
+/* cards & rows */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.stack{display:grid;gap:12px}
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .grow{flex:1;min-width:0}
+.row .t{font-weight:500;overflow-wrap:anywhere}
+.row .s{font-size:14px;color:var(--mut)}
+.num{font-weight:500;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font:500 12.5px Prompt;padding:2px 10px;border-radius:99px;background:var(--rose-t);color:var(--rose)}
+.pill.ok{background:var(--sage-t);color:var(--sage)} .pill.warn{background:var(--amber-t);color:var(--amber)}
+.empty{text-align:center;color:var(--mut);padding:28px 8px}
+
+/* home tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0 6px}
+.tile{border:0;border-radius:20px;padding:20px 16px;text-align:left;cursor:pointer;display:grid;gap:10px;font:inherit;min-height:128px;align-content:space-between}
+.tile svg{width:34px;height:34px}
+.tile b{font:500 20px Prompt;display:block}
+.tile span{font-size:14px;opacity:.85}
+.tile.out{background:var(--rose);color:#fff}
+.tile.in{background:var(--sage-t);color:var(--sage)}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.fact{padding:14px 16px}.fact .num{font-size:28px;line-height:1.1;display:block}.fact span{font-size:14px;color:var(--mut)}
+.bars{display:flex;align-items:flex-end;gap:5px;height:96px;margin-top:8px}
+.bars div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;height:100%}
+.bars i{display:block;border-radius:4px}
+
+/* forms */
+label{display:grid;gap:6px;font-size:14.5px;color:var(--mut)}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;width:100%;min-height:48px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--rose);outline-offset:1px;border-color:transparent}
+button:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
+.btn{font:500 17px Prompt;border:0;border-radius:14px;background:var(--rose);color:#fff;padding:14px 20px;min-height:52px;cursor:pointer;width:100%}
+.btn:hover{background:var(--rose-d)} .btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.soft{background:var(--rose-t);color:var(--rose)} .btn.ghost{background:none;color:var(--mut);border:1.5px solid var(--line)}
+.btn.sm{width:auto;min-height:40px;padding:8px 16px;font-size:15px}
+.form{display:grid;gap:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.search{position:relative}.search svg{position:absolute;left:14px;top:14px;width:20px;color:var(--mut)}.search input{padding-left:44px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.chip{flex:none;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:7px 16px;font:15px Sarabun;cursor:pointer;min-height:40px}
+.chip.on{background:var(--rose);border-color:var(--rose);color:#fff}
+.pick{display:flex;gap:12px;align-items:center;width:100%;text-align:left;border:0;background:none;padding:12px 0;border-bottom:1px solid var(--line);font:inherit;color:inherit;cursor:pointer;min-height:56px}
+.pick:disabled{opacity:.45;cursor:not-allowed}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:40px;height:40px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--rose);font:500 20px Prompt;cursor:pointer}
+.stepper input{width:64px;text-align:center;padding:8px 4px;min-height:40px}
+.x{border:0;background:none;color:var(--mut);font-size:22px;cursor:pointer;padding:6px 10px;border-radius:10px}
+.err{color:var(--red);font-size:14px}
+.note{padding:12px 14px;border-radius:12px;font-size:15px}.note.ok{background:var(--sage-t);color:var(--sage)}.note.bad{background:#f7dedb;color:var(--red)}
+@media(prefers-color-scheme:dark){.note.bad{background:#3d2220}}
+.done{text-align:center;padding:30px 10px}.done svg{width:60px;height:60px;color:var(--sage)}
+.done h1{margin-top:10px}
+
+/* sheet + toast */
+#sheetBg{position:fixed;inset:0;background:rgba(40,20,30,.4);z-index:40;display:none}
+#sheet{position:fixed;left:0;right:0;bottom:0;max-height:90vh;overflow:auto;background:var(--bg);border-radius:24px 24px 0 0;padding:8px 18px 28px;z-index:41;display:none;max-width:720px;margin:0 auto}
+#sheet .grab{width:44px;height:5px;background:var(--line);border-radius:9px;margin:6px auto 14px}
+@media(prefers-reduced-motion:no-preference){#sheet.open{animation:up .22s ease-out}@keyframes up{from{transform:translateY(40px);opacity:0}}}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:99px;font-size:15px;z-index:60;display:none;max-width:90vw}
+
+/* login */
+#login{min-height:100vh;display:grid;place-items:center;padding:18px}
+.lcard{width:100%;max-width:900px;background:var(--card);border:1px solid var(--line);border-radius:28px;padding:14px;display:grid;box-shadow:0 14px 44px rgba(176,78,105,.12)}
+.lart{display:none;background:var(--rose-t);border-radius:20px;padding:22px 20px;flex-direction:column;min-height:460px}
+.lart{overflow:hidden}.lart svg{flex:1;min-height:0;width:100%;overflow:visible}
+.lbrand,.lbrand-m{font:600 18px Prompt;color:var(--rose)}
+.lbrand-m{margin-bottom:14px}
+.lcap{text-align:center;color:var(--rose-d);font:500 16px/1.5 Prompt}
+.lform{padding:22px 18px 18px;display:grid;align-content:center}
+.lform h1{text-align:center;font:500 28px Prompt;margin:0 0 22px}
+.field{position:relative}.field .ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--mut);pointer-events:none}
+.field input{padding-left:46px}
+.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;background:none;color:var(--mut);cursor:pointer;border-radius:10px;display:grid;place-items:center}
+.eye svg{width:20px;height:20px}
+.forgot{text-align:right;margin-top:-6px}.forgot button,.sw button{border:0;background:none;color:var(--rose);font:500 15px Sarabun;cursor:pointer;padding:6px 2px;text-decoration:underline;text-underline-offset:3px}
+.sw{text-align:center;color:var(--mut);font-size:15px;margin:18px 0 0}
+@media(min-width:760px){.lcard{grid-template-columns:1fr 1fr}.lart{display:flex}.lbrand-m{display:none}.lform{padding:26px 34px}}
+</style>
+</head>
+<body>
+
+<div id="login" class="hide">
+  <div class="lcard">
+    <aside class="lart" aria-hidden="true">
+      <div class="lbrand">สต็อกของใช้สำนักงาน</div>
+      <svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+        <circle cx="330" cy="60" r="90" fill="#fff" opacity=".4"/><circle cx="40" cy="380" r="110" fill="#fff" opacity=".35"/>
+        <g fill="#c97b90"><rect x="40" y="136" width="320" height="10" rx="5"/><rect x="40" y="246" width="320" height="10" rx="5"/><rect x="40" y="356" width="320" height="10" rx="5"/>
+          <rect x="46" y="70" width="9" height="296" rx="4"/><rect x="345" y="70" width="9" height="296" rx="4"/></g>
+        <g><rect x="70" y="90" width="72" height="46" rx="6" fill="#f3c6d1"/><rect x="100" y="90" width="12" height="46" fill="#e6a9ba"/>
+          <rect x="152" y="104" width="56" height="32" rx="6" fill="#cfe6db"/><rect x="222" y="78" width="82" height="58" rx="6" fill="#f9dde4"/><rect x="254" y="78" width="12" height="58" fill="#efc3cf"/>
+          <rect x="70" y="190" width="92" height="56" rx="6" fill="#e9b0c0"/><rect x="108" y="190" width="12" height="56" fill="#d995aa"/>
+          <rect x="174" y="204" width="62" height="42" rx="6" fill="#fff"/><rect x="250" y="184" width="92" height="62" rx="6" fill="#f3c6d1"/><rect x="288" y="184" width="12" height="62" fill="#e6a9ba"/>
+          <rect x="70" y="298" width="62" height="58" rx="6" fill="#cfe6db"/><rect x="146" y="314" width="86" height="42" rx="6" fill="#f9dde4"/><rect x="246" y="294" width="86" height="62" rx="6" fill="#e9b0c0"/><rect x="284" y="294" width="12" height="62" fill="#d995aa"/></g>
+        <g transform="translate(214 8)"><rect width="128" height="60" rx="14" fill="#fff"/><circle cx="24" cy="21" r="7" fill="#4d8a6f"/><rect x="42" y="17" width="64" height="8" rx="4" fill="#ead9de"/><circle cx="24" cy="42" r="7" fill="#b04e69"/><rect x="42" y="38" width="44" height="8" rx="4" fill="#ead9de"/></g>
+      </svg>
+      <p class="lcap">เบิก รับเข้า และนับสต็อก<br>ได้ง่าย ๆ ในที่เดียว</p>
+    </aside>
+    <section class="lform">
+      <div id="formBox">
+        <div class="lbrand-m">สต็อกของใช้สำนักงาน</div>
+        <h1 id="lTitle">เข้าสู่ระบบ</h1>
+        <div class="form">
+          <label id="nameBox" class="hide">ชื่อที่แสดง<div class="field"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><input id="nm" autocomplete="name" placeholder="เช่น สมชาย"></div></label>
+          <label>อีเมล<div class="field"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 8l9 6 9-6"/></svg><input id="em" type="email" autocomplete="username" inputmode="email" placeholder="you@email.com"></div></label>
+          <label>รหัสผ่าน<div class="field"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><input id="pw" type="password" autocomplete="current-password" placeholder="อย่างน้อย 6 ตัวอักษร"><button type="button" class="eye" id="eye" aria-label="แสดงรหัสผ่าน"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></label>
+          <div class="forgot"><button type="button" id="forgot">ลืมรหัสผ่าน?</button></div>
+          <button class="btn" id="go">เข้าสู่ระบบ</button>
+          <div id="loginMsg"></div>
+        </div>
+        <p class="sw"><span id="swText">ยังไม่มีบัญชี?</span> <button type="button" id="swBtn">สมัครใช้งาน</button></p>
+      </div>
+      <div id="recBox" class="hide">
+        <h1>ตั้งรหัสผ่านใหม่</h1>
+        <div class="form"><label>รหัสผ่านใหม่<div class="field"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><input id="rp" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร"></div></label>
+          <button class="btn" id="recGo">บันทึกรหัสผ่านใหม่</button><div id="recMsg"></div></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="app" class="hide">
+  <div class="top"><div class="brand">สต็อกของใช้สำนักงาน</div><div class="who" id="who"></div></div>
+  <nav id="nav"></nav>
+  <main class="wrap" id="view"></main>
+</div>
+
+<div id="sheetBg"></div><div id="sheet" role="dialog" aria-modal="true"></div><div id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+const sb = supabase.createClient(STOCK_CONFIG.url, STOCK_CONFIG.key);
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => Number(n).toLocaleString('th-TH', {maximumFractionDigits: 2});
+const fdt = s => new Date(s).toLocaleString('th-TH', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Bangkok'});
+const fday = s => new Date(s).toLocaleDateString('th-TH', {day:'numeric', month:'short', timeZone:'Asia/Bangkok'});
+const TYPE = {OUT:'เบิก', IN:'รับเข้า', ADJUST:'ปรับยอด', NEW:'เพิ่มสินค้า'};
+const svg = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const IC = {
+  home: svg('<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),
+  out: svg('<path d="M12 16V4M7 9l5-5 5 5M4 20h16"/>'),
+  in: svg('<path d="M12 4v12M7 11l5 5 5-5M4 20h16"/>'),
+  box: svg('<path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/>'),
+  more: svg('<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>'),
+  search: svg('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>'),
+  check: svg('<circle cx="12" cy="12" r="10"/><path d="M8 12.5l3 3 5-6"/>'),
+};
+const NAV = [['home','หน้าหลัก',IC.home],['out','เบิกของ',IC.out],['in','รับของเข้า',IC.in],['stock','สต็อก',IC.box],['more','เพิ่มเติม',IC.more]];
+const NAV_OF = {hist:'more', sum:'more', users:'more'};
+
+let me = null, items = [], mode = 'in';
+const cart = { OUT: {who:'', note:'', lines:[]}, IN: {who:'', note:'', lines:[]} };
+
+function toast(t) { const el = $('#toast'); el.textContent = t; el.style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(() => el.style.display = 'none', 2600); }
+function openSheet(html) { $('#sheet').innerHTML = '<div class="grab"></div>' + html; $('#sheetBg').style.display = $('#sheet').style.display = 'block'; $('#sheet').classList.add('open'); }
+function closeSheet() { $('#sheetBg').style.display = $('#sheet').style.display = 'none'; $('#sheet').classList.remove('open'); }
+$('#sheetBg').onclick = closeSheet;
+document.addEventListener('keydown', e => e.key === 'Escape' && closeSheet());
+
+/* ---------- login ---------- */
+const RECOVERY = location.hash.includes('type=recovery');
+function setMode(m) { mode = m; const up = m === 'up';
+  $('#lTitle').textContent = up ? 'สมัครใช้งาน' : 'เข้าสู่ระบบ'; $('#nameBox').classList.toggle('hide', !up); $('#forgot').parentElement.classList.toggle('hide', up);
+  $('#go').textContent = up ? 'สมัครใช้งาน' : 'เข้าสู่ระบบ'; $('#swText').textContent = up ? 'มีบัญชีแล้ว?' : 'ยังไม่มีบัญชี?'; $('#swBtn').textContent = up ? 'เข้าสู่ระบบ' : 'สมัครใช้งาน';
+  $('#pw').autocomplete = up ? 'new-password' : 'current-password'; $('#loginMsg').innerHTML = ''; }
+$('#swBtn').onclick = () => setMode(mode === 'in' ? 'up' : 'in');
+$('#eye').onclick = () => { const i = $('#pw'), show = i.type === 'password'; i.type = show ? 'text' : 'password'; $('#eye').setAttribute('aria-label', show ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'); };
+const authMsg = m => /rate limit/i.test(m) ? 'ระบบส่งอีเมลบ่อยเกินไป รอสักครู่แล้วลองใหม่ หรือแจ้งผู้ดูแล' : m === 'Invalid login credentials' ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' : m;
+$('#go').onclick = async () => {
+  const email = $('#em').value.trim(), password = $('#pw').value, name = $('#nm').value.trim();
+  const say = (k, t) => $('#loginMsg').innerHTML = `<div class="note ${k}">${esc(t)}</div>`;
+  if (!email.includes('@')) return say('bad', 'กรอกอีเมลให้ถูกต้อง');
+  if (!password) return say('bad', 'กรอกรหัสผ่าน');
+  if (mode === 'up' && password.length < 6) return say('bad', 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+  $('#go').disabled = true;
+  const r = mode === 'up' ? await sb.auth.signUp({ email, password, options: { data: { name } } }) : await sb.auth.signInWithPassword({ email, password });
+  $('#go').disabled = false;
+  if (r.error) return say('bad', authMsg(r.error.message));
+  if (mode === 'up' && !r.data.session) return say('ok', 'สมัครแล้ว กดลิงก์ยืนยันในอีเมลของคุณ แล้วกลับมาเข้าสู่ระบบ');
+  boot();
+};
+$('#forgot').onclick = async () => {
+  const email = $('#em').value.trim(), say = (k, t) => $('#loginMsg').innerHTML = `<div class="note ${k}">${esc(t)}</div>`;
+  if (!email.includes('@')) return say('bad', 'กรอกอีเมลก่อน แล้วกดลืมรหัสผ่านอีกครั้ง');
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  say(error ? 'bad' : 'ok', error ? authMsg(error.message) : 'ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่อีเมลแล้ว');
+};
+$('#pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('#go').click(); });
+function showRecovery() { $('#app').classList.add('hide'); $('#login').classList.remove('hide'); $('#formBox').classList.add('hide'); $('#recBox').classList.remove('hide'); }
+$('#recGo').onclick = async () => { const v = $('#rp').value, say = (k, t) => $('#recMsg').innerHTML = `<div class="note ${k}">${esc(t)}</div>`;
+  if (v.length < 6) return say('bad', 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+  const { error } = await sb.auth.updateUser({ password: v }); if (error) return say('bad', authMsg(error.message));
+  history.replaceState(null, '', location.pathname); $('#recBox').classList.add('hide'); $('#formBox').classList.remove('hide'); boot(); };
+sb.auth.onAuthStateChange(ev => { if (ev === 'PASSWORD_RECOVERY') showRecovery(); });
+
+async function boot() {
+  if (RECOVERY && !window.__recDone) { window.__recDone = true; showRecovery(); return; }
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { $('#app').classList.add('hide'); $('#login').classList.remove('hide'); return; }
+  const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+  me = p; $('#login').classList.add('hide'); $('#app').classList.remove('hide');
+  $('#who').innerHTML = p ? `${esc(p.display_name)}<br>${p.role === 'admin' ? 'ผู้ดูแล' : 'พนักงาน'}` : '';
+  if (!p || !p.active) {
+    $('#nav').innerHTML = '';
+    $('#view').innerHTML = `<div class="card done"><h1>รอผู้ดูแลอนุมัติ</h1><p class="sub">บัญชี ${esc(session.user.email)} ยังไม่ได้รับสิทธิ์ใช้งาน<br>แจ้งผู้ดูแลให้กดอนุมัติ แล้วกดตรวจสอบอีกครั้ง</p><div class="stack" style="margin-top:18px"><button class="btn" id="re">ตรวจสอบอีกครั้ง</button><button class="btn ghost" id="lo">ออกจากระบบ</button></div></div>`;
+    $('#re').onclick = boot; $('#lo').onclick = logout; return;
+  }
+  $('#nav').innerHTML = NAV.map(n => `<button data-t="${n[0]}">${n[2]}<span>${n[1]}</span></button>`).join('');
+  $('#nav').onclick = e => { const b = e.target.closest('button'); if (b) location.hash = '#/' + b.dataset.t; };
+  route();
+}
+async function logout() { await sb.auth.signOut(); location.reload(); }
+window.addEventListener('hashchange', () => me && me.active && route());
+
+/* ---------- routing ---------- */
+const PAGES = { home, out: () => moveForm('OUT'), in: () => moveForm('IN'), stock, more, hist, sum, users };
+async function route() {
+  let t = location.hash.replace('#/', '') || 'home'; if (!PAGES[t]) t = 'home';
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.t === (NAV_OF[t] || t)));
+  $('#view').innerHTML = '<p class="empty">กำลังโหลด…</p>'; $('#view').onclick = null; closeSheet(); scrollTo(0, 0);
+  try { const { data, error } = await sb.from('v_item_status').select('*').order('code'); if (error) throw error; items = data; await PAGES[t](); }
+  catch (e) { $('#view').innerHTML = `<div class="note bad">${esc(e.message)}</div>`; }
+}
+const go = t => location.hash = '#/' + t;
+
+/* ---------- home ---------- */
+async function home() {
+  const since = new Date(Date.now() - 13*864e5).toISOString().slice(0,10);
+  const [{ data: days }, { data: recent }] = await Promise.all([
+    sb.from('v_daily').select('*').gte('day', since).order('day'),
+    sb.from('movements').select('*, items(name,unit)').in('type',['OUT','IN','ADJUST']).order('ts', {ascending:false}).limit(6)]);
+  const low = items.filter(i => i.low), today = new Date().toLocaleDateString('sv', {timeZone:'Asia/Bangkok'});
+  const td = (days||[]).find(d => d.day === today) || {out_count:0, in_count:0};
+  const max = Math.max(1, ...(days||[]).map(d => Math.max(+d.out_qty, +d.in_qty)));
+  const hr = +new Date().toLocaleString('en-GB', {hour:'2-digit', hour12:false, timeZone:'Asia/Bangkok'});
+  $('#view').innerHTML = `
+    <h1>${hr < 12 ? 'สวัสดีตอนเช้า' : hr < 17 ? 'สวัสดีตอนบ่าย' : 'สวัสดีตอนเย็น'}, ${esc(me.display_name)}</h1>
+    <p class="sub">วันนี้ต้องการทำอะไร</p>
+    <div class="tiles">
+      <button class="tile out" data-g="out">${IC.out}<div><b>เบิกของ</b><span>ตัดของออกจากคลัง</span></div></button>
+      <button class="tile in" data-g="in">${IC.in}<div><b>รับของเข้า</b><span>เติมของเข้าคลัง</span></div></button>
+    </div>
+    <div class="facts">
+      <button class="card fact" data-g="stock?low" style="text-align:left;cursor:pointer;font:inherit;color:inherit"><span class="num" style="color:${low.length?'var(--rose)':'var(--sage)'}">${low.length}</span><span>รายการใกล้หมด</span></button>
+      <div class="card fact"><span class="num">${td.out_count + td.in_count}</span><span>รายการเคลื่อนไหววันนี้</span></div>
+    </div>
+    <h2>ของที่ควรสั่งเพิ่ม</h2>
+    <div class="card">${low.length ? low.slice(0,6).map(i => `<div class="row"><div class="grow"><div class="t">${esc(i.name)}</div><div class="s">${esc(i.code)} · ${esc(i.category)}</div></div><span class="pill ${+i.qty===0?'':'warn'}">เหลือ ${fmt(i.qty)} ${esc(i.unit)}</span></div>`).join('')
+      + (low.length > 6 ? `<button class="btn soft sm" style="margin-top:10px" data-g="stock?low">ดูทั้งหมด ${low.length} รายการ</button>` : '')
+      : '<p class="empty">ของทุกอย่างยังเพียงพอ</p>'}</div>
+    <h2>14 วันที่ผ่านมา</h2>
+    <div class="card"><div class="bars">${(days||[]).map(d => `<div title="${d.day}: เบิก ${d.out_qty} / รับ ${d.in_qty}"><i style="height:${Math.max(2,(+d.in_qty/max)*48)}%;background:var(--sage)"></i><i style="height:${Math.max(2,(+d.out_qty/max)*48)}%;background:var(--rose)"></i></div>`).join('') || '<p class="empty" style="width:100%">ยังไม่มีข้อมูล</p>'}</div>
+      <p class="sub" style="margin-top:8px"><span style="color:var(--rose)">●</span> เบิกออก &nbsp; <span style="color:var(--sage)">●</span> รับเข้า</p></div>
+    <h2>ล่าสุด</h2>
+    <div class="card">${(recent||[]).map(m => moveRow(m)).join('') || '<p class="empty">ยังไม่มีรายการ</p>'}</div>`;
+  $('#view').onclick = e => { const b = e.target.closest('[data-g]'); if (b) { stockFilter = b.dataset.g.includes('low') ? 'low' : ''; go(b.dataset.g.split('?')[0]); } };
+}
+function moveRow(m) {
+  const cls = m.type === 'OUT' ? '' : m.type === 'IN' ? 'ok' : 'warn';
+  const q = m.type === 'ADJUST' ? (m.qty > 0 ? '+' : '') + fmt(m.qty) : fmt(m.qty);
+  return `<div class="row"><div class="grow"><div class="t">${esc(m.items?.name ?? m.code)}</div><div class="s">${fdt(m.ts)} · ${esc(m.note || m.actor)}</div></div><div style="text-align:right"><span class="pill ${cls}">${TYPE[m.type]} ${q}</span><div class="s">${esc(m.items?.unit ?? '')}${m.balance_after == null ? '' : ' · คงเหลือ ' + fmt(m.balance_after)}</div></div></div>`;
+}
+
+/* ---------- withdraw / receive (basket) ---------- */
+async function moveForm(type) {
+  const out = type === 'OUT', S = cart[type];
+  const find = c => items.find(i => i.code === c);
+  let sugg = [];
+  if (out) { const { data } = await sb.from('v_monthly_by_item').select('code,out_qty'); const t = {}; (data||[]).forEach(r => t[r.code] = (t[r.code]||0) + +r.out_qty);
+    sugg = Object.entries(t).sort((a,b) => b[1]-a[1]).map(e => find(e[0])).filter(Boolean).slice(0,6); }
+  else sugg = items.filter(i => i.low).slice(0,6);
+  $('#view').innerHTML = `
+    <h1>${out ? 'เบิกของ' : 'รับของเข้า'}</h1><p class="sub">${out ? 'เลือกของที่ต้องการเบิก เบิกได้หลายรายการในครั้งเดียว' : 'เลือกของที่รับเข้า รับได้หลายรายการในครั้งเดียว'}</p>
+    <div id="body" class="stack" style="margin-top:14px">
+      <div class="card form">
+        <label>${out ? 'ผู้เบิก (ชื่อ-แผนก)' : 'รับจาก / หมายเหตุ'}<input id="person" value="${esc(S.who)}" placeholder="${out ? 'เช่น สมหญิง QA' : 'ไม่บังคับ'}"></label>
+      </div>
+      <div class="card">
+        <div class="search">${IC.search}<input id="q" placeholder="ค้นหาชื่อหรือรหัสสินค้า" autocomplete="off"></div>
+        <div id="res"></div>
+      </div>
+      <div id="cartBox"></div>
+    </div>`;
+  const who = $('#person'); who.oninput = () => S.who = who.value;
+  const drawRes = () => { const q = $('#q').value.trim().toLowerCase();
+    const list = q ? items.filter(i => i.active && `${i.code} ${i.name} ${i.category}`.toLowerCase().includes(q)).slice(0,8) : sugg;
+    $('#res').innerHTML = (q ? '' : `<p class="sub" style="margin:12px 0 0">${out ? 'เบิกบ่อย' : 'ใกล้หมด ควรรับเข้า'}</p>`)
+      + (list.map(i => { const inC = S.lines.some(l => l.code === i.code), dis = out && +i.qty <= 0;
+        return `<button class="pick" data-add="${esc(i.code)}" ${dis || inC ? 'disabled' : ''}><div class="grow" style="flex:1;min-width:0"><div class="t" style="font-weight:500">${esc(i.name)}</div><div class="s sub">${esc(i.code)} · ${esc(i.category)}</div></div>
+          <span class="pill ${dis ? '' : 'ok'}">${inC ? 'เลือกแล้ว' : dis ? 'หมด' : 'เหลือ ' + fmt(i.qty) + ' ' + esc(i.unit)}</span></button>`; }).join('') || '<p class="empty">ไม่พบสินค้า</p>'); };
+  const drawCart = () => {
+    const bad = S.lines.some(l => !(l.qty > 0) || (out && l.qty > +find(l.code).qty));
+    $('#cartBox').innerHTML = S.lines.length ? `<div class="card"><h3 style="margin:0 0 4px;font-weight:500">รายการที่เลือก (${S.lines.length})</h3>${S.lines.map(l => { const i = find(l.code), over = out && l.qty > +i.qty;
+      return `<div class="row" style="align-items:flex-start"><div class="grow"><div class="t">${esc(i.name)}</div><div class="s">${esc(i.code)} · มี ${fmt(i.qty)} ${esc(i.unit)}${over ? '' : ' → ' + fmt(+i.qty + (out ? -l.qty : +l.qty)) + ' หลัง' + (out ? 'เบิก' : 'รับ')}</div>${over ? `<div class="err">มีไม่พอ เหลือ ${fmt(i.qty)} ${esc(i.unit)}</div>` : ''}</div>
+        <div class="stepper"><button data-dec="${esc(l.code)}" aria-label="ลดจำนวน">−</button><input type="number" inputmode="decimal" min="0" step="any" value="${l.qty}" data-set="${esc(l.code)}" aria-label="จำนวน"><button data-inc="${esc(l.code)}" aria-label="เพิ่มจำนวน">+</button></div>
+        <button class="x" data-rm="${esc(l.code)}" aria-label="เอาออก">×</button></div>`; }).join('')}
+      <label style="margin-top:12px">หมายเหตุ (ไม่บังคับ)<input id="note" value="${esc(S.note)}"></label></div>
+      <button class="btn" id="submit" ${bad ? 'disabled' : ''}>${out ? 'ยืนยันการเบิก' : 'ยืนยันการรับเข้า'} ${S.lines.length} รายการ</button><div id="msg"></div>` : '';
+    const n = $('#note'); if (n) n.oninput = () => S.note = n.value; };
+  drawRes(); drawCart();
+  $('#q').oninput = drawRes;
+  $('#body').onclick = e => { const t = e.target.closest('button'); if (!t) return; const d = t.dataset;
+    if (d.add) { S.lines.push({code: d.add, qty: 1}); $('#q').value = ''; drawRes(); drawCart(); }
+    else if (d.inc || d.dec) { const l = S.lines.find(x => x.code === (d.inc || d.dec)); l.qty = Math.max(0, +l.qty + (d.inc ? 1 : -1)); drawCart(); }
+    else if (d.rm) { S.lines = S.lines.filter(x => x.code !== d.rm); drawRes(); drawCart(); }
+    else if (t.id === 'submit') submit(); };
+  $('#body').onchange = e => { const c = e.target.dataset.set; if (c) { S.lines.find(x => x.code === c).qty = parseFloat(e.target.value) || 0; drawCart(); } };
+  async function submit() {
+    if (out && !S.who.trim()) { $('#msg').innerHTML = '<div class="note bad">กรอกชื่อผู้เบิกก่อน</div>'; who.focus(); return; }
+    $('#submit').disabled = true;
+    const person = [S.who.trim(), S.note.trim()].filter(Boolean).join(' · ');
+    const rows = S.lines.map(l => ({ type, code: l.code, qty: l.qty, actor: me.display_name, dept: find(l.code).category, note: person }));
+    const { error } = await sb.from('movements').insert(rows);
+    if (error) { $('#msg').innerHTML = `<div class="note bad">${esc(error.message)}</div>`; $('#submit').disabled = false; return; }
+    const done = S.lines.map(l => ({...find(l.code), n: l.qty})); S.who = ''; S.note = ''; S.lines = [];
+    $('#view').innerHTML = `<div class="card done">${IC.check}<h1>${out ? 'เบิกเรียบร้อย' : 'รับเข้าเรียบร้อย'}</h1><p class="sub">บันทึก ${done.length} รายการแล้ว</p>
+      <div style="text-align:left;margin:16px 0">${done.map(d => `<div class="row"><div class="grow t">${esc(d.name)}</div><span class="num">${out ? '−' : '+'}${fmt(d.n)} ${esc(d.unit)}</span></div>`).join('')}</div>
+      <div class="stack"><button class="btn" id="again">${out ? 'เบิกอีกครั้ง' : 'รับเข้าอีกครั้ง'}</button><button class="btn ghost" id="hm">กลับหน้าหลัก</button></div></div>`;
+    $('#again').onclick = route; $('#hm').onclick = () => go('home'); }
+}
+
+/* ---------- stock list + edit ---------- */
+let stockFilter = '';
+async function stock() {
+  const admin = me.role === 'admin', cats = [...new Set(items.map(i => i.category))];
+  let cat = '', low = stockFilter === 'low'; stockFilter = '';
+  $('#view').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><h1>สต็อก</h1><p class="sub">${items.length} รายการ</p></div>${admin ? '<button class="btn sm" id="add" style="flex:none">+ เพิ่มสินค้า</button>' : ''}</div>
+    <div class="search" style="margin-top:14px">${IC.search}<input id="f" placeholder="ค้นหาชื่อหรือรหัสสินค้า" autocomplete="off"></div>
+    <div class="chips" id="chips" style="margin-top:10px"></div><div class="card" id="list"></div>`;
+  const draw = () => {
+    $('#chips').innerHTML = [['','ทั้งหมด'], ...cats.map(c => [c, c])].map(c => `<button class="chip ${!low && cat === c[0] ? 'on' : ''}" data-c="${esc(c[0])}">${esc(c[1])}</button>`).join('')
+      + `<button class="chip ${low ? 'on' : ''}" data-low="1">ใกล้หมด (${items.filter(i => i.low).length})</button>`;
+    const f = $('#f').value.trim().toLowerCase();
+    const rows = items.filter(i => (!low || i.low) && (!cat || i.category === cat) && `${i.code} ${i.name}`.toLowerCase().includes(f));
+    $('#list').innerHTML = rows.map(i => `<button class="pick" data-i="${esc(i.code)}"><div style="flex:1;min-width:0"><div class="t" style="font-weight:500">${esc(i.name)}</div><div class="sub" style="font-size:14px">${esc(i.code)} · ${esc(i.category)}</div></div>
+      <div style="text-align:right"><span class="num" style="font-size:20px;color:${i.low ? 'var(--rose)' : 'var(--ink)'}">${fmt(i.qty)}</span> <span class="sub" style="font-size:14px">${esc(i.unit)}</span>${i.low ? '<div><span class="pill">ใกล้หมด</span></div>' : ''}</div></button>`).join('') || '<p class="empty">ไม่พบสินค้า</p>'; };
+  draw(); $('#f').oninput = draw;
+  $('#chips').onclick = e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.low) { low = !low; } else { low = false; cat = b.dataset.c; } draw(); };
+  $('#list').onclick = e => { const b = e.target.closest('[data-i]'); if (b) itemSheet(items.find(i => i.code === b.dataset.i)); };
+  if (admin) $('#add').onclick = () => itemSheet(null);
+}
+function itemSheet(it) {
+  const admin = me.role === 'admin', n = !it;
+  if (!admin) return openSheet(`<h1>${esc(it.name)}</h1><p class="sub">${esc(it.code)} · ${esc(it.category)}</p><div class="card" style="margin:16px 0"><span class="num" style="font-size:32px">${fmt(it.qty)}</span> ${esc(it.unit)}<p class="sub">จุดสั่งซื้อขั้นต่ำ ${fmt(it.min_qty)}${it.last_out ? ' · เบิกล่าสุด ' + fday(it.last_out) : ''}</p></div><button class="btn ghost" onclick="closeSheet()">ปิด</button>`);
+  it ||= {code:'', name:'', qty:0, unit:'', min_qty:0, category:''};
+  openSheet(`<h1>${n ? 'เพิ่มสินค้าใหม่' : esc(it.name)}</h1>${n ? '' : `<p class="sub">${esc(it.code)} · ${esc(it.category)}</p>`}
+    <div class="form" style="margin-top:14px">
+      ${n ? `<label>รหัสสินค้า<input id="code" placeholder="เช่น A-043"></label>` : `<div class="card"><label>นับของแล้วเหลือเท่าไร (ตอนนี้ ${fmt(it.qty)} ${esc(it.unit)})<input id="newq" type="number" inputmode="decimal" step="any" placeholder="ใส่จำนวนที่นับได้"></label>
+        <label style="margin-top:10px">เหตุผลที่ปรับ<input id="why" placeholder="เช่น นับสต็อกประจำเดือน"></label></div>`}
+      <label>ชื่อสินค้า<input id="name" value="${esc(it.name)}"></label>
+      <div class="two"><label>หน่วย<input id="unit" value="${esc(it.unit)}" placeholder="แพ็ค, ชิ้น"></label><label>เตือนเมื่อเหลือไม่เกิน<input id="min" type="number" inputmode="decimal" step="any" value="${it.min_qty}"></label></div>
+      <label>หมวดหมู่<input id="cat" value="${esc(it.category)}" list="cats"></label><datalist id="cats">${[...new Set(items.map(i => i.category))].map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+      ${n ? `<label>จำนวนเริ่มต้น<input id="qty" type="number" inputmode="decimal" step="any" value="0"></label>` : ''}
+      <div id="msg"></div><button class="btn" id="save">บันทึก</button><button class="btn ghost" id="cancel">ยกเลิก</button></div>`);
+  $('#cancel').onclick = closeSheet;
+  $('#save').onclick = async () => {
+    const say = (k, t) => $('#msg').innerHTML = `<div class="note ${k}">${esc(t)}</div>`;
+    const row = { name: $('#name').value.trim(), unit: $('#unit').value.trim(), min_qty: +$('#min').value || 0, category: $('#cat').value.trim() };
+    if (!row.name) return say('bad', 'กรอกชื่อสินค้า');
+    $('#save').disabled = true; let r;
+    if (n) { const code = $('#code').value.trim(); if (!code) { $('#save').disabled = false; return say('bad', 'กรอกรหัสสินค้า'); }
+      r = await sb.from('items').insert({ ...row, code, qty: 0 });
+      if (!r.error) { await sb.from('movements').insert({ type:'NEW', code, qty: 0, actor: me.display_name, dept: row.category, note:'เพิ่มสินค้าใหม่' });
+        const q0 = +$('#qty').value || 0; if (q0 > 0) r = await sb.rpc('set_stock', { p_code: code, p_new_qty: q0, p_note: 'ยอดเริ่มต้น' }); } }
+    else { r = await sb.from('items').update({ ...row, updated_at: new Date().toISOString() }).eq('code', it.code);
+      const nq = $('#newq').value; if (!r.error && nq !== '') { if (!$('#why').value.trim()) { $('#save').disabled = false; return say('bad', 'บอกเหตุผลที่ปรับยอดด้วย'); }
+        r = await sb.rpc('set_stock', { p_code: it.code, p_new_qty: +nq, p_note: $('#why').value.trim() }); } }
+    if (r.error) { $('#save').disabled = false; return say('bad', r.error.message); }
+    toast('บันทึกแล้ว'); route();
+  };
+}
+
+/* ---------- more ---------- */
+async function more() {
+  const admin = me.role === 'admin';
+  const link = (t, s, to) => `<button class="pick" data-g="${to}"><div style="flex:1"><div class="t" style="font-weight:500">${t}</div><div class="sub" style="font-size:14px">${s}</div></div><span class="sub">›</span></button>`;
+  $('#view').innerHTML = `<h1>เพิ่มเติม</h1><div class="card" style="margin-top:14px">${link('ประวัติ', 'ดูรายการเบิก รับ ปรับยอดทั้งหมด', 'hist')}${link('สรุปรายเดือน', 'ดูว่าเดือนนี้เบิกอะไรไปบ้าง', 'sum')}${admin ? link('ผู้ใช้งาน', 'อนุมัติและจัดการผู้ใช้', 'users') : ''}</div>
+    <div class="card form" style="margin-top:14px"><label>เปลี่ยนรหัสผ่าน<input id="np" type="password" autocomplete="new-password" placeholder="รหัสผ่านใหม่ อย่างน้อย 6 ตัวอักษร"></label><button class="btn soft" id="chpw">บันทึกรหัสผ่านใหม่</button></div>
+    <div class="stack" style="margin-top:18px"><p class="sub">เข้าสู่ระบบเป็น ${esc(me.display_name)} (${admin ? 'ผู้ดูแล' : 'พนักงาน'})</p><button class="btn ghost" id="lo">ออกจากระบบ</button></div>`;
+  $('#chpw').onclick = async () => { const v = $('#np').value; if (v.length < 6) return toast('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+    const { error } = await sb.auth.updateUser({ password: v }); if (error) return toast(error.message); $('#np').value = ''; toast('เปลี่ยนรหัสผ่านแล้ว'); };
+  $('#lo').onclick = logout; $('#view').onclick = e => { const b = e.target.closest('[data-g]'); if (b) go(b.dataset.g); };
+}
+
+/* ---------- history ---------- */
+async function hist() {
+  let type = '', text = '', rows = [];
+  $('#view').innerHTML = `<h1>ประวัติ</h1><div class="search" style="margin-top:12px">${IC.search}<input id="f" placeholder="ค้นหาสินค้า หรือชื่อคน" autocomplete="off"></div>
+    <div class="chips" id="chips" style="margin-top:10px">${[['','ทั้งหมด'],['OUT','เบิก'],['IN','รับเข้า'],['ADJUST','ปรับยอด']].map(c => `<button class="chip ${c[0]===''?'on':''}" data-t="${c[0]}">${c[1]}</button>`).join('')}</div>
+    <div class="card" id="list"></div><div class="stack" style="margin-top:12px"><button class="btn soft" id="csv">ดาวน์โหลดเป็นไฟล์ Excel (CSV)</button></div>`;
+  const draw = () => { const t = text.toLowerCase(); const v = rows.filter(m => !t || `${m.code} ${m.items?.name} ${m.note} ${m.actor}`.toLowerCase().includes(t));
+    $('#list').innerHTML = v.slice(0, 120).map(moveRow).join('') || '<p class="empty">ไม่พบรายการ</p>' + (v.length > 120 ? `<p class="sub" style="text-align:center">แสดง 120 จาก ${v.length} รายการ ใช้ค้นหาเพื่อกรอง</p>` : ''); };
+  const load = async () => { let q = sb.from('movements').select('*, items(name,unit)').order('ts', {ascending:false}).limit(600); if (type) q = q.eq('type', type);
+    const { data, error } = await q; if (error) return $('#list').innerHTML = `<div class="note bad">${esc(error.message)}</div>`; rows = data; draw(); };
+  $('#f').oninput = e => { text = e.target.value.trim(); draw(); };
+  $('#chips').onclick = e => { const b = e.target.closest('button'); if (!b) return; type = b.dataset.t; document.querySelectorAll('#chips .chip').forEach(c => c.classList.toggle('on', c === b)); load(); };
+  $('#csv').onclick = () => download('ประวัติ.csv', [['เวลา','ประเภท','รหัส','รายการ','จำนวน','คงเหลือ','ผู้บันทึก','หมวด','ผู้เบิก/หมายเหตุ'], ...rows.map(m => [fdt(m.ts), TYPE[m.type], m.code, m.items?.name, m.qty, m.balance_after, m.actor, m.dept, m.note])]);
+  load();
+}
+function download(name, rows) {
+  const csv = '﻿' + rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+  Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([csv], {type:'text/csv'})), download: name }).click();
+}
+
+/* ---------- summary ---------- */
+async function sum() {
+  const { data, error } = await sb.from('v_monthly_by_item').select('*'); if (error) throw error;
+  const months = [...new Set(data.map(d => d.month))].sort().reverse();
+  if (!months.length) return $('#view').innerHTML = '<h1>สรุปรายเดือน</h1><p class="empty">ยังไม่มีข้อมูล</p>';
+  const mname = m => new Date(m + '-01T12:00:00+07:00').toLocaleDateString('th-TH', {month:'long', year:'numeric'});
+  let cur = months[0], rows = [];
+  $('#view').innerHTML = `<h1>สรุปรายเดือน</h1><div class="chips" id="chips" style="margin-top:12px">${months.map(m => `<button class="chip" data-m="${m}">${mname(m)}</button>`).join('')}</div><div id="out"></div>`;
+  const draw = () => {
+    document.querySelectorAll('#chips .chip').forEach(c => c.classList.toggle('on', c.dataset.m === cur));
+    rows = data.filter(d => d.month === cur).sort((a, b) => b.out_qty - a.out_qty);
+    const to = rows.reduce((s, r) => s + +r.out_qty, 0), ti = rows.reduce((s, r) => s + +r.in_qty, 0), top = rows.filter(r => +r.out_qty > 0).slice(0, 10), mx = Math.max(1, ...top.map(r => +r.out_qty));
+    const cat = {}; rows.forEach(r => cat[r.category] = (cat[r.category] || 0) + +r.out_qty); const cats = Object.entries(cat).filter(c => c[1] > 0).sort((a, b) => b[1] - a[1]); const cm = Math.max(1, ...cats.map(c => c[1]));
+    const bar = (label, sub, v, m, col) => `<div style="padding:8px 0"><div style="display:flex;justify-content:space-between;gap:10px"><span class="t">${esc(label)}</span><span class="num">${fmt(v)} <span class="sub" style="font-size:13px">${esc(sub)}</span></span></div><div style="height:8px;border-radius:9px;background:var(--line);margin-top:5px"><div style="height:8px;border-radius:9px;background:${col};width:${v / m * 100}%"></div></div></div>`;
+    $('#out').innerHTML = `<div class="facts"><div class="card fact"><span class="num" style="color:var(--rose)">${fmt(to)}</span><span>เบิกออก (ชิ้น)</span></div><div class="card fact"><span class="num" style="color:var(--sage)">${fmt(ti)}</span><span>รับเข้า (ชิ้น)</span></div></div>
+      <h2>เบิกมากที่สุด</h2><div class="card">${top.map(r => bar(r.name, r.unit, +r.out_qty, mx, 'var(--rose)')).join('') || '<p class="empty">เดือนนี้ยังไม่มีการเบิก</p>'}</div>
+      <h2>แยกตามหมวด</h2><div class="card">${cats.map(c => bar(c[0], 'ชิ้น', c[1], cm, 'var(--sage)')).join('') || '<p class="empty">ไม่มีข้อมูล</p>'}</div>
+      <div class="stack" style="margin-top:14px"><button class="btn soft" id="csv">ดาวน์โหลดเป็นไฟล์ Excel (CSV)</button></div>`;
+    $('#csv').onclick = () => download(`สรุป-${cur}.csv`, [['รหัส','ชื่อ','หมวด','เบิก','รับ','หน่วย'], ...rows.map(r => [r.code, r.name, r.category, r.out_qty, r.in_qty, r.unit])]); };
+  $('#chips').onclick = e => { const b = e.target.closest('button'); if (b) { cur = b.dataset.m; draw(); } };
+  draw();
+}
+
+/* ---------- users (admin) ---------- */
+async function users() {
+  if (me.role !== 'admin') return go('home');
+  const { data, error } = await sb.from('profiles').select('*').order('created_at'); if (error) throw error;
+  $('#view').innerHTML = `<h1>ผู้ใช้งาน</h1><p class="sub">คนที่สมัครใหม่จะใช้งานได้หลังคุณกดอนุมัติ</p><div class="card" style="margin-top:14px">${data.map(u => `<div class="row"><div class="grow"><div class="t">${esc(u.display_name)}</div><div class="s">${esc(u.email)} · ${u.role === 'admin' ? 'ผู้ดูแล' : 'พนักงาน'}</div></div>
+    ${u.id === me.id ? '<span class="pill ok">คุณ</span>' : `<button class="btn sm ${u.active ? 'ghost' : ''}" data-a="${u.id}" data-v="${!u.active}">${u.active ? 'ระงับ' : 'อนุมัติ'}</button>`}</div>`).join('')}</div>`;
+  $('#view').onclick = async e => { const b = e.target.closest('[data-a]'); if (!b) return;
+    const { error } = await sb.from('profiles').update({ active: b.dataset.v === 'true' }).eq('id', b.dataset.a);
+    if (error) toast(error.message); else { toast(b.dataset.v === 'true' ? 'อนุมัติแล้ว' : 'ระงับแล้ว'); users(); } };
+}
+
+boot();
+</script>
+</body>
+</html>

@@ -219,7 +219,13 @@ const cart = { OUT: {who:'', note:'', lines:[]}, IN: {who:'', note:'', lines:[]}
 
 function toast(t) { const el = $('#toast'); el.textContent = t; el.style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(() => el.style.display = 'none', 2600); }
 function openSheet(html) { $('#sheet').innerHTML = '<div class="grab"></div>' + html; $('#sheetBg').style.display = $('#sheet').style.display = 'block'; $('#sheet').classList.add('open'); }
-function closeSheet() { $('#sheetBg').style.display = $('#sheet').style.display = 'none'; $('#sheet').classList.remove('open'); }
+let dirty = false;
+function closeSheet() { const d = dirty; dirty = false; $('#sheetBg').style.display = $('#sheet').style.display = 'none'; $('#sheet').classList.remove('open'); if (d) route(); }
+async function openMove(type) {
+  openSheet('<div style="display:flex;justify-content:flex-end;margin-top:-6px"><button class="x" id="mvx" aria-label="ปิด">×</button></div><div id="mv"></div>');
+  $('#mvx').onclick = closeSheet;
+  try { await moveForm(type, $('#mv')); } catch (e) { $('#mv').innerHTML = `<div class="note bad">${esc(e.message)}</div>`; }
+}
 $('#sheetBg').onclick = closeSheet;
 document.addEventListener('keydown', e => e.key === 'Escape' && closeSheet());
 
@@ -272,14 +278,14 @@ async function boot() {
     $('#re').onclick = boot; $('#lo').onclick = logout; return;
   }
   $('#nav').innerHTML = NAV.map(n => `<button data-t="${n[0]}">${n[2]}<span>${n[1]}</span></button>`).join('');
-  $('#nav').onclick = e => { const b = e.target.closest('button'); if (b) location.hash = '#/' + b.dataset.t; };
+  $('#nav').onclick = e => { const b = e.target.closest('button'); if (!b) return; const t = b.dataset.t; if (t === 'out' || t === 'in') openMove(t.toUpperCase()); else location.hash = '#/' + t; };
   route();
 }
 async function logout() { await sb.auth.signOut(); location.reload(); }
 window.addEventListener('hashchange', () => me && me.active && route());
 
 /* ---------- routing ---------- */
-const PAGES = { home, out: () => moveForm('OUT'), in: () => moveForm('IN'), stock, more, hist, sum, users };
+const PAGES = { home, out: () => moveForm('OUT', $('#view')), in: () => moveForm('IN', $('#view')), stock, more, hist, sum, users };
 async function route() {
   let t = location.hash.replace('#/', '') || 'home'; if (!PAGES[t]) t = 'home';
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.t === (NAV_OF[t] || t)));
@@ -333,7 +339,7 @@ async function home() {
       <p class="sub" style="margin-top:8px"><span style="color:var(--rose)">●</span> เบิกออก &nbsp; <span style="color:var(--sage)">●</span> รับเข้า</p></div>
     <h2>ล่าสุด</h2>
     <div class="card">${(recent||[]).map(m => moveRow(m)).join('') || '<p class="empty">ยังไม่มีรายการ</p>'}</div>`;
-  $('#view').onclick = e => { const b = e.target.closest('[data-g]'); if (b) { const [pg, f] = b.dataset.g.split('?'); stockFilter = f || ''; go(pg); } };
+  $('#view').onclick = e => { const b = e.target.closest('[data-g]'); if (b) { const [pg, f] = b.dataset.g.split('?'); if (pg === 'out' || pg === 'in') return openMove(pg.toUpperCase()); stockFilter = f || ''; go(pg); } };
 }
 function moveRow(m) {
   const cls = m.type === 'OUT' ? '' : m.type === 'IN' ? 'ok' : 'warn';
@@ -342,14 +348,15 @@ function moveRow(m) {
 }
 
 /* ---------- withdraw / receive (basket) ---------- */
-async function moveForm(type) {
+async function moveForm(type, root) {
+  const q$ = x => root.querySelector(x);
   const out = type === 'OUT', S = cart[type];
   const find = c => items.find(i => i.code === c);
   let sugg = [];
   if (out) { const { data } = await sb.from('v_monthly_by_item').select('code,out_qty'); const t = {}; (data||[]).forEach(r => t[r.code] = (t[r.code]||0) + +r.out_qty);
     sugg = Object.entries(t).sort((a,b) => b[1]-a[1]).map(e => find(e[0])).filter(Boolean).slice(0,6); }
   else sugg = items.filter(i => i.low).slice(0,6);
-  $('#view').innerHTML = `
+  root.innerHTML = `
     <h1>${out ? 'เบิกของ' : 'รับของเข้า'}</h1><p class="sub">${out ? 'เลือกของที่ต้องการเบิก เบิกได้หลายรายการในครั้งเดียว' : 'เลือกของที่รับเข้า รับได้หลายรายการในครั้งเดียว'}</p>
     <div id="body" class="stack" style="margin-top:14px">
       <div class="card form">
@@ -361,42 +368,43 @@ async function moveForm(type) {
       </div>
       <div id="cartBox"></div>
     </div>`;
-  const who = $('#person'); who.oninput = () => S.who = who.value;
-  const drawRes = () => { const q = $('#q').value.trim().toLowerCase();
+  const who = q$('#person'); who.oninput = () => S.who = who.value;
+  const drawRes = () => { const q = q$('#q').value.trim().toLowerCase();
     const list = q ? items.filter(i => i.active && `${i.code} ${i.name} ${i.category}`.toLowerCase().includes(q)).slice(0,8) : sugg;
-    $('#res').innerHTML = (q ? '' : `<p class="sub" style="margin:12px 0 0">${out ? 'เบิกบ่อย' : 'ใกล้หมด ควรรับเข้า'}</p>`)
+    q$('#res').innerHTML = (q ? '' : `<p class="sub" style="margin:12px 0 0">${out ? 'เบิกบ่อย' : 'ใกล้หมด ควรรับเข้า'}</p>`)
       + (list.map(i => { const inC = S.lines.some(l => l.code === i.code), dis = out && +i.qty <= 0;
         return `<button class="pick" data-add="${esc(i.code)}" ${dis || inC ? 'disabled' : ''}><div class="grow" style="flex:1;min-width:0"><div class="t" style="font-weight:500">${esc(i.name)}</div><div class="s sub">${esc(i.code)} · ${esc(i.category)}</div></div>
           <span class="pill ${dis ? '' : 'ok'}">${inC ? 'เลือกแล้ว' : dis ? 'หมด' : 'เหลือ ' + fmt(i.qty) + ' ' + esc(i.unit)}</span></button>`; }).join('') || '<p class="empty">ไม่พบสินค้า</p>'); };
   const drawCart = () => {
     const bad = S.lines.some(l => !(l.qty > 0) || (out && l.qty > +find(l.code).qty));
-    $('#cartBox').innerHTML = S.lines.length ? `<div class="card"><h3 style="margin:0 0 4px;font-weight:500">รายการที่เลือก (${S.lines.length})</h3>${S.lines.map(l => { const i = find(l.code), over = out && l.qty > +i.qty;
+    q$('#cartBox').innerHTML = S.lines.length ? `<div class="card"><h3 style="margin:0 0 4px;font-weight:500">รายการที่เลือก (${S.lines.length})</h3>${S.lines.map(l => { const i = find(l.code), over = out && l.qty > +i.qty;
       return `<div class="row" style="align-items:flex-start"><div class="grow"><div class="t">${esc(i.name)}</div><div class="s">${esc(i.code)} · มี ${fmt(i.qty)} ${esc(i.unit)}${over ? '' : ' → ' + fmt(+i.qty + (out ? -l.qty : +l.qty)) + ' หลัง' + (out ? 'เบิก' : 'รับ')}</div>${over ? `<div class="err">มีไม่พอ เหลือ ${fmt(i.qty)} ${esc(i.unit)}</div>` : ''}</div>
         <div class="stepper"><button data-dec="${esc(l.code)}" aria-label="ลดจำนวน">−</button><input type="number" inputmode="decimal" min="0" step="any" value="${l.qty}" data-set="${esc(l.code)}" aria-label="จำนวน"><button data-inc="${esc(l.code)}" aria-label="เพิ่มจำนวน">+</button></div>
         <button class="x" data-rm="${esc(l.code)}" aria-label="เอาออก">×</button></div>`; }).join('')}
       <label style="margin-top:12px">หมายเหตุ (ไม่บังคับ)<input id="note" value="${esc(S.note)}"></label></div>
       <button class="btn" id="submit" ${bad ? 'disabled' : ''}>${out ? 'ยืนยันการเบิก' : 'ยืนยันการรับเข้า'} ${S.lines.length} รายการ</button><div id="msg"></div>` : '';
-    const n = $('#note'); if (n) n.oninput = () => S.note = n.value; };
+    const n = q$('#note'); if (n) n.oninput = () => S.note = n.value; };
   drawRes(); drawCart();
-  $('#q').oninput = drawRes;
-  $('#body').onclick = e => { const t = e.target.closest('button'); if (!t) return; const d = t.dataset;
-    if (d.add) { S.lines.push({code: d.add, qty: 1}); $('#q').value = ''; drawRes(); drawCart(); }
+  q$('#q').oninput = drawRes;
+  q$('#body').onclick = e => { const t = e.target.closest('button'); if (!t) return; const d = t.dataset;
+    if (d.add) { S.lines.push({code: d.add, qty: 1}); q$('#q').value = ''; drawRes(); drawCart(); }
     else if (d.inc || d.dec) { const l = S.lines.find(x => x.code === (d.inc || d.dec)); l.qty = Math.max(0, +l.qty + (d.inc ? 1 : -1)); drawCart(); }
     else if (d.rm) { S.lines = S.lines.filter(x => x.code !== d.rm); drawRes(); drawCart(); }
     else if (t.id === 'submit') submit(); };
-  $('#body').onchange = e => { const c = e.target.dataset.set; if (c) { S.lines.find(x => x.code === c).qty = parseFloat(e.target.value) || 0; drawCart(); } };
+  q$('#body').onchange = e => { const c = e.target.dataset.set; if (c) { S.lines.find(x => x.code === c).qty = parseFloat(e.target.value) || 0; drawCart(); } };
   async function submit() {
-    if (out && !S.who.trim()) { $('#msg').innerHTML = '<div class="note bad">กรอกชื่อผู้เบิกก่อน</div>'; who.focus(); return; }
-    $('#submit').disabled = true;
+    if (out && !S.who.trim()) { q$('#msg').innerHTML = '<div class="note bad">กรอกชื่อผู้เบิกก่อน</div>'; who.focus(); return; }
+    q$('#submit').disabled = true;
     const person = [S.who.trim(), S.note.trim()].filter(Boolean).join(' · ');
     const rows = S.lines.map(l => ({ type, code: l.code, qty: l.qty, actor: me.display_name, dept: find(l.code).category, note: person }));
     const { error } = await sb.from('movements').insert(rows);
-    if (error) { $('#msg').innerHTML = `<div class="note bad">${esc(error.message)}</div>`; $('#submit').disabled = false; return; }
-    const done = S.lines.map(l => ({...find(l.code), n: l.qty})); S.who = ''; S.note = ''; S.lines = [];
-    $('#view').innerHTML = `<div class="card done">${IC.check}<h1>${out ? 'เบิกเรียบร้อย' : 'รับเข้าเรียบร้อย'}</h1><p class="sub">บันทึก ${done.length} รายการแล้ว</p>
+    if (error) { q$('#msg').innerHTML = `<div class="note bad">${esc(error.message)}</div>`; q$('#submit').disabled = false; return; }
+    const done = S.lines.map(l => ({...find(l.code), n: l.qty})); dirty = true;
+    const { data: fresh } = await sb.from('v_item_status').select('*').order('code'); if (fresh) items = fresh; S.who = ''; S.note = ''; S.lines = [];
+    root.innerHTML = `<div class="card done">${IC.check}<h1>${out ? 'เบิกเรียบร้อย' : 'รับเข้าเรียบร้อย'}</h1><p class="sub">บันทึก ${done.length} รายการแล้ว</p>
       <div style="text-align:left;margin:16px 0">${done.map(d => `<div class="row"><div class="grow t">${esc(d.name)}</div><span class="num">${out ? '−' : '+'}${fmt(d.n)} ${esc(d.unit)}</span></div>`).join('')}</div>
       <div class="stack"><button class="btn" id="again">${out ? 'เบิกอีกครั้ง' : 'รับเข้าอีกครั้ง'}</button><button class="btn ghost" id="hm">กลับหน้าหลัก</button></div></div>`;
-    $('#again').onclick = route; $('#hm').onclick = () => go('home'); }
+    q$('#again').onclick = () => moveForm(type, root); q$('#hm').onclick = () => root.id === 'mv' ? closeSheet() : go('home'); }
 }
 
 /* ---------- stock list + edit ---------- */

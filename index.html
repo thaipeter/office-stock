@@ -105,6 +105,19 @@ button:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
 @media(prefers-reduced-motion:no-preference){#sheet.open{animation:up .22s ease-out}@keyframes up{from{transform:translateY(40px);opacity:0}}}
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:99px;font-size:15px;z-index:60;display:none;max-width:90vw}
 
+
+/* key metrics */
+.score{display:flex;align-items:center;gap:20px;border-radius:20px;padding:18px 20px;background:linear-gradient(135deg,var(--rose-t),var(--card) 70%);border:1px solid var(--line)}
+.ring{position:relative;width:116px;height:116px;flex:none}.ring svg{transform:rotate(-90deg);width:100%;height:100%}
+.ring div{position:absolute;inset:0;display:grid;place-content:center;text-align:center}.ring b{font:600 32px/1 Prompt}.ring span{font-size:12px;color:var(--mut)}
+.score h3{font:500 20px Prompt;margin:2px 0 6px}
+.meters{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.meter{padding:12px 14px}.meter .top{display:flex;flex-direction:column;gap:0;font-size:14px;color:var(--mut)}.meter .top span{order:1}.meter b{order:0;font:500 26px/1.2 Prompt}
+.track{height:7px;border-radius:99px;background:var(--line);margin-top:8px;overflow:hidden}.track i{display:block;height:100%;border-radius:99px}
+.todo{display:flex;align-items:center;gap:14px;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:14px;padding:12px 16px;min-height:60px}
+.todo .t{font-weight:500}.todo .go{font:500 14px Prompt;color:var(--c);border:1.5px solid var(--c);border-radius:10px;padding:5px 14px;flex:none}
+.foot{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:var(--mut);margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+
 /* login */
 #login{min-height:100vh;display:grid;place-items:center;padding:18px}
 .lcard{width:100%;max-width:900px;background:var(--card);border:1px solid var(--line);border-radius:28px;padding:14px;display:grid;box-shadow:0 14px 44px rgba(176,78,105,.12)}
@@ -286,6 +299,10 @@ async function home() {
   const td = (days||[]).find(d => d.day === today) || {out_count:0, in_count:0};
   const max = Math.max(1, ...(days||[]).map(d => Math.max(+d.out_qty, +d.in_qty)));
   const hr = +new Date().toLocaleString('en-GB', {hour:'2-digit', hour12:false, timeZone:'Asia/Bangkok'});
+  const total = Math.max(1, items.length), ready = Math.round(100 * (total - low.length) / total), avail = Math.round(100 * items.filter(i => +i.qty > 0).length / total);
+  const score = Math.round((ready + avail) / 2), zeroN = items.filter(i => +i.qty === 0 && +i.min_qty > 0).length;
+  const sc = score >= 85 ? 'var(--sage)' : score >= 70 ? 'var(--amber)' : 'var(--red)', st = score >= 85 ? 'อยู่ในเกณฑ์ดี' : score >= 70 ? 'ควรเฝ้าระวัง' : 'ต้องเติมของด่วน';
+  const w7 = (days||[]).slice(-7), in7 = w7.reduce((a, d) => a + +d.in_count, 0), out7 = w7.reduce((a, d) => a + +d.out_count, 0), C = 314.16;
   $('#view').innerHTML = `
     <h1>${hr < 12 ? 'สวัสดีตอนเช้า' : hr < 17 ? 'สวัสดีตอนบ่าย' : 'สวัสดีตอนเย็น'}, ${esc(me.display_name)}</h1>
     <p class="sub">วันนี้ต้องการทำอะไร</p>
@@ -293,10 +310,20 @@ async function home() {
       <button class="tile out" data-g="out">${IC.out}<div><b>เบิกของ</b><span>ตัดของออกจากคลัง</span></div></button>
       <button class="tile in" data-g="in">${IC.in}<div><b>รับของเข้า</b><span>เติมของเข้าคลัง</span></div></button>
     </div>
-    <div class="facts">
-      <button class="card fact" data-g="stock?low" style="text-align:left;cursor:pointer;font:inherit;color:inherit"><span class="num" style="color:${low.length?'var(--rose)':'var(--sage)'}">${low.length}</span><span>รายการใกล้หมด</span></button>
-      <div class="card fact"><span class="num">${td.out_count + td.in_count}</span><span>รายการเคลื่อนไหววันนี้</span></div>
+    <h2>ดัชนีชี้วัดสำคัญ</h2>
+    <div class="score"><div class="ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="none" stroke="var(--line)" stroke-width="10"/><circle cx="60" cy="60" r="50" fill="none" stroke="${sc}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - score / 100)}"/></svg><div><b>${score}</b><span>จาก 100</span></div></div>
+      <div style="min-width:0"><p class="sub">สุขภาพคลังโดยรวม</p><h3 style="color:${sc}">${st}</h3><p class="sub" style="font-size:14px">${low.length ? `ดึงคะแนนลงมากสุดคือของใกล้หมด ${low.length} รายการ` : 'ของทุกอย่างอยู่ในเกณฑ์'}</p></div></div>
+    <div class="meters">
+      <div class="card meter"><div class="top"><span>ความพร้อมสต็อก</span><b style="color:var(--sage)">${ready}%</b></div><div class="track"><i style="width:${ready}%;background:var(--sage)"></i></div></div>
+      <div class="card meter"><div class="top"><span>มีของพร้อมเบิก</span><b style="color:var(--rose)">${avail}%</b></div><div class="track"><i style="width:${avail}%;background:var(--rose)"></i></div></div>
     </div>
+    <h2>ควรทำก่อน</h2>
+    <div class="stack">
+      <button class="todo" style="--c:var(--red)" data-g="stock?low"><div style="flex:1"><div class="t">สั่งเติมของที่ใกล้หมด</div><div class="sub" style="font-size:14px">${low.length} รายการ</div></div><span class="go">ดูรายการ</span></button>
+      <button class="todo" style="--c:var(--amber)" data-g="stock?zero"><div style="flex:1"><div class="t">ของที่หมดคลังแล้ว</div><div class="sub" style="font-size:14px">${zeroN} รายการ</div></div><span class="go">ดูรายการ</span></button>
+      <button class="todo" style="--c:var(--sage)" data-g="hist"><div style="flex:1"><div class="t">ตรวจรายการเคลื่อนไหววันนี้</div><div class="sub" style="font-size:14px">${td.out_count + td.in_count} รายการ</div></div><span class="go">ดูประวัติ</span></button>
+    </div>
+    <div class="foot"><span>รับเข้า 7 วัน <b style="color:var(--sage)">${in7}</b></span><span>เบิกออก 7 วัน <b style="color:var(--rose)">${out7}</b></span></div>
     <h2>ของที่ควรสั่งเพิ่ม</h2>
     <div class="card">${low.length ? low.slice(0,6).map(i => `<div class="row"><div class="grow"><div class="t">${esc(i.name)}</div><div class="s">${esc(i.code)} · ${esc(i.category)}</div></div><span class="pill ${+i.qty===0?'':'warn'}">เหลือ ${fmt(i.qty)} ${esc(i.unit)}</span></div>`).join('')
       + (low.length > 6 ? `<button class="btn soft sm" style="margin-top:10px" data-g="stock?low">ดูทั้งหมด ${low.length} รายการ</button>` : '')
@@ -306,7 +333,7 @@ async function home() {
       <p class="sub" style="margin-top:8px"><span style="color:var(--rose)">●</span> เบิกออก &nbsp; <span style="color:var(--sage)">●</span> รับเข้า</p></div>
     <h2>ล่าสุด</h2>
     <div class="card">${(recent||[]).map(m => moveRow(m)).join('') || '<p class="empty">ยังไม่มีรายการ</p>'}</div>`;
-  $('#view').onclick = e => { const b = e.target.closest('[data-g]'); if (b) { stockFilter = b.dataset.g.includes('low') ? 'low' : ''; go(b.dataset.g.split('?')[0]); } };
+  $('#view').onclick = e => { const b = e.target.closest('[data-g]'); if (b) { const [pg, f] = b.dataset.g.split('?'); stockFilter = f || ''; go(pg); } };
 }
 function moveRow(m) {
   const cls = m.type === 'OUT' ? '' : m.type === 'IN' ? 'ok' : 'warn';
@@ -376,19 +403,19 @@ async function moveForm(type) {
 let stockFilter = '';
 async function stock() {
   const admin = me.role === 'admin', cats = [...new Set(items.map(i => i.category))];
-  let cat = '', low = stockFilter === 'low'; stockFilter = '';
+  let cat = '', low = stockFilter === 'low', zero = stockFilter === 'zero'; stockFilter = '';
   $('#view').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><h1>สต็อก</h1><p class="sub">${items.length} รายการ</p></div>${admin ? '<button class="btn sm" id="add" style="flex:none">+ เพิ่มสินค้า</button>' : ''}</div>
     <div class="search" style="margin-top:14px">${IC.search}<input id="f" placeholder="ค้นหาชื่อหรือรหัสสินค้า" autocomplete="off"></div>
     <div class="chips" id="chips" style="margin-top:10px"></div><div class="card" id="list"></div>`;
   const draw = () => {
-    $('#chips').innerHTML = [['','ทั้งหมด'], ...cats.map(c => [c, c])].map(c => `<button class="chip ${!low && cat === c[0] ? 'on' : ''}" data-c="${esc(c[0])}">${esc(c[1])}</button>`).join('')
-      + `<button class="chip ${low ? 'on' : ''}" data-low="1">ใกล้หมด (${items.filter(i => i.low).length})</button>`;
+    $('#chips').innerHTML = [['','ทั้งหมด'], ...cats.map(c => [c, c])].map(c => `<button class="chip ${!low && !zero && cat === c[0] ? 'on' : ''}" data-c="${esc(c[0])}">${esc(c[1])}</button>`).join('')
+      + `<button class="chip ${low ? 'on' : ''}" data-low="1">ใกล้หมด (${items.filter(i => i.low).length})</button><button class="chip ${zero ? 'on' : ''}" data-zero="1">หมดแล้ว (${items.filter(i => +i.qty === 0 && +i.min_qty > 0).length})</button>`;
     const f = $('#f').value.trim().toLowerCase();
-    const rows = items.filter(i => (!low || i.low) && (!cat || i.category === cat) && `${i.code} ${i.name}`.toLowerCase().includes(f));
+    const rows = items.filter(i => (!low || i.low) && (!zero || (+i.qty === 0 && +i.min_qty > 0)) && (!cat || i.category === cat) && `${i.code} ${i.name}`.toLowerCase().includes(f));
     $('#list').innerHTML = rows.map(i => `<button class="pick" data-i="${esc(i.code)}"><div style="flex:1;min-width:0"><div class="t" style="font-weight:500">${esc(i.name)}</div><div class="sub" style="font-size:14px">${esc(i.code)} · ${esc(i.category)}</div></div>
       <div style="text-align:right"><span class="num" style="font-size:20px;color:${i.low ? 'var(--rose)' : 'var(--ink)'}">${fmt(i.qty)}</span> <span class="sub" style="font-size:14px">${esc(i.unit)}</span>${i.low ? '<div><span class="pill">ใกล้หมด</span></div>' : ''}</div></button>`).join('') || '<p class="empty">ไม่พบสินค้า</p>'; };
   draw(); $('#f').oninput = draw;
-  $('#chips').onclick = e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.low) { low = !low; } else { low = false; cat = b.dataset.c; } draw(); };
+  $('#chips').onclick = e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.low) { low = !low; zero = false; } else if (b.dataset.zero) { zero = !zero; low = false; } else { low = zero = false; cat = b.dataset.c; } draw(); };
   $('#list').onclick = e => { const b = e.target.closest('[data-i]'); if (b) itemSheet(items.find(i => i.code === b.dataset.i)); };
   if (admin) $('#add').onclick = () => itemSheet(null);
 }
